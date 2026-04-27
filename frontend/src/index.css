@@ -1,0 +1,164 @@
+@import "tailwindcss";
+
+/*
+ * Tailwind v4 dark-mode wiring: enable class-based dark variant so that
+ * `dark:...` utilities respond to `<html class="dark">`. ThemeContext
+ * adds/removes that class based on the saved theme preference.
+ */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/*
+ * ---------------------------------------------------------------------------
+ * Design tokens
+ * ---------------------------------------------------------------------------
+ * Single source of truth for the light/dark surface stack. Keeping them here
+ * means tweaking the palette later doesn't require hunting through every
+ * component. Named after their role (app, surface, elevated) rather than the
+ * underlying color so we can shift the palette without renaming.
+ */
+:root {
+  --app-bg: #ffffff;          /* page background */
+  --surface-1: #ffffff;       /* cards / primary surfaces */
+  --surface-2: #f9fafb;       /* inputs / subtle panels */
+  --surface-hover: #f3f4f6;
+  --border-subtle: #e5e7eb;
+  --border-strong: #d1d5db;
+  --text-primary: #111827;
+  --text-secondary: #4b5563;
+  --text-muted: #9ca3af;
+}
+
+html.dark {
+  /* A cooler, slightly blue-tinted near-black so dark mode doesn't feel flat
+   * grey. Each step is ~6-8% lightness apart, giving distinct elevation. */
+  --app-bg: #0b0d12;          /* deepest — page background */
+  --surface-1: #12151d;       /* cards */
+  --surface-2: #1a1e28;       /* inputs, subtle panels */
+  --surface-hover: #222734;
+  --border-subtle: #1f2531;
+  --border-strong: #2a3141;
+  --text-primary: #f3f4f6;
+  --text-secondary: #d1d5db;
+  --text-muted: #8b93a5;
+}
+
+html,
+body,
+#root {
+  min-height: 100%;
+  background-color: var(--app-bg);
+  color: var(--text-primary);
+  transition: background-color 200ms ease, color 200ms ease;
+}
+
+/*
+ * Give common mutable properties a short, consistent transition so theme
+ * flips, hovers, and sidebar animations feel synchronized instead of each
+ * element animating at its own speed. Applied broadly but at 0 specificity so
+ * component-level transitions can override.
+ */
+:where(*) {
+  transition-property: background-color, border-color, color, fill, stroke, box-shadow;
+  transition-duration: 150ms;
+  transition-timing-function: ease;
+}
+
+/* Elements that drive their own animations (width, transforms) opt out of the
+ * blanket rule above by specifying their own `transition-*`. The `:where`
+ * wrapper ensures our rule loses any specificity tie. */
+
+:where(html.dark) input,
+:where(html.dark) textarea,
+:where(html.dark) select {
+  color-scheme: dark;
+}
+
+/*
+ * ---------------------------------------------------------------------------
+ * App-wide dark-mode fallbacks
+ * ---------------------------------------------------------------------------
+ * We still have a long tail of pages that use bare `bg-white` / `text-gray-*`
+ * without `dark:` variants. These `:where()` rules remap those utilities when
+ * the `.dark` root class is present, at zero specificity — any explicit
+ * `dark:*` utility still wins.
+ */
+:where(html.dark) :where(.bg-white)      { background-color: var(--surface-1); }
+:where(html.dark) :where(.bg-gray-50)    { background-color: var(--app-bg); }
+:where(html.dark) :where(.bg-gray-100)   { background-color: var(--surface-2); }
+:where(html.dark) :where(.bg-gray-200)   { background-color: var(--surface-hover); }
+
+:where(html.dark) :where(.text-gray-900) { color: var(--text-primary); }
+:where(html.dark) :where(.text-gray-800) { color: #e5e7eb; }
+:where(html.dark) :where(.text-gray-700) { color: var(--text-secondary); }
+:where(html.dark) :where(.text-gray-600) { color: #9ca3af; }
+:where(html.dark) :where(.text-gray-500) { color: var(--text-muted); }
+:where(html.dark) :where(.text-gray-400) { color: #6b7280; }
+
+:where(html.dark) :where(.border-gray-100) { border-color: var(--border-subtle); }
+:where(html.dark) :where(.border-gray-200) { border-color: var(--border-subtle); }
+:where(html.dark) :where(.border-gray-300) { border-color: var(--border-strong); }
+
+/* Soft tinted surfaces used across the app — darken them so they don't glow. */
+:where(html.dark) :where(.bg-blue-50)    { background-color: rgba(59, 130, 246, 0.10); }
+:where(html.dark) :where(.bg-indigo-50)  { background-color: rgba(99, 102, 241, 0.10); }
+:where(html.dark) :where(.bg-purple-50)  { background-color: rgba(168, 85, 247, 0.10); }
+:where(html.dark) :where(.bg-emerald-50) { background-color: rgba(16, 185, 129, 0.10); }
+:where(html.dark) :where(.bg-amber-50)   { background-color: rgba(245, 158, 11, 0.10); }
+:where(html.dark) :where(.bg-red-50)     { background-color: rgba(239, 68, 68, 0.10); }
+:where(html.dark) :where(.bg-orange-50)  { background-color: rgba(249, 115, 22, 0.10); }
+:where(html.dark) :where(.bg-yellow-50)  { background-color: rgba(234, 179, 8, 0.10); }
+:where(html.dark) :where(.bg-green-50)   { background-color: rgba(34, 197, 94, 0.10); }
+
+:where(html.dark) :where(.border-blue-100, .border-blue-200)       { border-color: rgba(59, 130, 246, 0.25); }
+:where(html.dark) :where(.border-indigo-100, .border-indigo-200)   { border-color: rgba(99, 102, 241, 0.25); }
+:where(html.dark) :where(.border-purple-100, .border-purple-200)   { border-color: rgba(168, 85, 247, 0.25); }
+:where(html.dark) :where(.border-emerald-100, .border-emerald-200) { border-color: rgba(16, 185, 129, 0.25); }
+:where(html.dark) :where(.border-amber-100, .border-amber-200)     { border-color: rgba(245, 158, 11, 0.25); }
+:where(html.dark) :where(.border-red-100, .border-red-200)         { border-color: rgba(239, 68, 68, 0.25); }
+
+/* Dark-mode color bumps for AA-contrast on tinted surfaces. */
+:where(html.dark) :where(.text-blue-700)    { color: #93c5fd; }
+:where(html.dark) :where(.text-indigo-700)  { color: #a5b4fc; }
+:where(html.dark) :where(.text-purple-700)  { color: #d8b4fe; }
+:where(html.dark) :where(.text-emerald-700) { color: #6ee7b7; }
+:where(html.dark) :where(.text-green-700)   { color: #86efac; }
+:where(html.dark) :where(.text-amber-700)   { color: #fcd34d; }
+:where(html.dark) :where(.text-orange-700)  { color: #fdba74; }
+:where(html.dark) :where(.text-yellow-700)  { color: #fde047; }
+:where(html.dark) :where(.text-red-700)     { color: #fca5a5; }
+
+:where(html.dark) :where(.text-blue-900)    { color: #bfdbfe; }
+:where(html.dark) :where(.text-indigo-900)  { color: #c7d2fe; }
+:where(html.dark) :where(.text-purple-900)  { color: #e9d5ff; }
+:where(html.dark) :where(.text-emerald-900) { color: #a7f3d0; }
+:where(html.dark) :where(.text-amber-900)   { color: #fde68a; }
+:where(html.dark) :where(.text-red-900)     { color: #fecaca; }
+
+/* Hover states on light greys should not flash back to bright. */
+:where(html.dark) :where(.hover\:bg-gray-50:hover)  { background-color: var(--surface-2); }
+:where(html.dark) :where(.hover\:bg-gray-100:hover) { background-color: var(--surface-hover); }
+:where(html.dark) :where(.hover\:bg-white:hover)    { background-color: var(--surface-1); }
+
+/* Inputs / textareas with light gray chrome. */
+:where(html.dark) :where(input, textarea, select) {
+  background-color: var(--surface-2);
+  border-color: var(--border-subtle);
+  color: var(--text-primary);
+}
+:where(html.dark) :where(input::placeholder, textarea::placeholder) {
+  color: var(--text-muted);
+}
+:where(html.dark) :where(input:focus, textarea:focus, select:focus) {
+  border-color: rgba(99, 102, 241, 0.5);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+}
+
+/* Common divide-* utilities used for row separators. */
+:where(html.dark) :where(.divide-gray-100 > * + *) { border-color: var(--border-subtle); }
+:where(html.dark) :where(.divide-gray-200 > * + *) { border-color: var(--border-strong); }
+
+/* Native scrollbars — keep them understated in dark mode. */
+:where(html.dark) ::-webkit-scrollbar           { width: 10px; height: 10px; }
+:where(html.dark) ::-webkit-scrollbar-track     { background: var(--app-bg); }
+:where(html.dark) ::-webkit-scrollbar-thumb     { background: var(--border-strong); border-radius: 8px; }
+:where(html.dark) ::-webkit-scrollbar-thumb:hover { background: #3a4255; }
